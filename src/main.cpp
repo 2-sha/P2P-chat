@@ -13,7 +13,7 @@
 	#include <Windows.h>
 #else
 	#include <iconv.h>
-#endif 
+#endif
 typedef nlohmann::json json;
 typedef application::Message Message;
 
@@ -147,7 +147,7 @@ int main(int argc, char* argv[])
 				{ "type", "message" },
 				{ "data", {
 					{ "user", message.user },
-					{ "data", message.data }
+					{ "content", message.content }
 				}}
 			}).dump());
 			app.printMessage(message);
@@ -180,7 +180,7 @@ int main(int argc, char* argv[])
 			{
 				app.printMessage(Message(
 					data.at("data").at("user").get<std::wstring>(),
-					data.at("data").at("data").get<std::wstring>()
+					data.at("data").at("content").get<std::wstring>()
 				));
 			}
 			// Somebody want's list of online users

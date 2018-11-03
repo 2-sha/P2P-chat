@@ -33,10 +33,10 @@ namespace application
 
 	struct Message
 	{
-		std::wstring user, data;
+		std::wstring user, content;
 
-		Message(std::wstring user, std::wstring data)
-			: user(user), data(data) {};
+		Message(std::wstring user, std::wstring content)
+			: user(user), content(content) {};
 	};
 
 	class Chat

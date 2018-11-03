@@ -56,9 +56,9 @@ int Chat::_getwch()
 }
 #endif
 
-void Chat::sendMessage(const std::wstring &data)
+void Chat::sendMessage(const std::wstring &content)
 {
-	sendMessageCallback_(Message(username_, data));
+	sendMessageCallback_(Message(username_, content));
 }
 
 void Chat::calcPrompt()
@@ -116,7 +116,7 @@ void Chat::printMessage(Message receivedMessage)
 {
 	mut.lock();
 	cleanInput();
-	std::wcout << receivedMessage.user << separator_ << receivedMessage.data << std::endl;
+	std::wcout << receivedMessage.user << separator_ << receivedMessage.content << std::endl;
 	std::wcout << prompt_ << _input;
 	mut.unlock();
 }
