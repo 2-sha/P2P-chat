@@ -9,7 +9,7 @@ At startup, you can use `-p` or `-port` option to select the port to which you w
 ./chat.exe -port 8001
 ```
 ## Installation
-The fastest and easiest way is to download the compiled files for [Windows]() or [Linux]().
+The fastest and easiest way is to download the compiled files for [Windows](https://github.com/2-sha/P2P-chat/releases/download/v1.0/P2P-chat_windows.exe) or [Linux](https://github.com/2-sha/P2P-chat/releases/download/v1.0/P2P-chat_linux).
 Well, if someone wants to compile on their own, there is CMake. When creating used boost, so it will have to install.
 ##### Windows
 You can compile from [sources](https://www.boost.org/users/history/version_1_67_0.html) yourself or install it by this [installer](https://sourceforge.net/projects/boost/files/boost-binaries/1.67.0/)
