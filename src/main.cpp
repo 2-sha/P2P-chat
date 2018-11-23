@@ -73,6 +73,20 @@ int main(int argc, char* argv[])
 	}
 	std::wcout << "Connection to port " << port << " was successful" << std::endl << std::endl;
 
+	// Prining list of online users
+	std::vector<std::string> userList = net.sendSurvey(json({
+				{ "type", "user_list_req" }
+		}).dump(), std::regex(".*(\"type\":\"user_list_res\").*"));
+	if (userList.empty())
+		std::wcout << "You are alone at this port :(" << std::endl << std::endl;
+	else
+	{
+		std::wcout << "List of online user:" << std::endl;
+		for (auto it : userList)
+			std::wcout << json::parse(it).at("data").at("user").get<std::wstring>() << std::endl;
+		std::wcout << std::endl;
+	}
+
 	// Username setting
 	std::wcout << "Welcome to our perfect chat!\nEnter your username: ";
 	bool isUsernameCorrect;
