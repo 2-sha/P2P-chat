@@ -188,7 +188,8 @@ int Chat::run()
 			sendMessage(temp);
 			break;
 		default:
-			if (inputSize_ < MAX_INPUT_SIZE)
+			if (inputSize_ < MAX_INPUT_SIZE && 
+				ch > 31 && (ch < 128 || ch > 160))
 			{
 				std::wcout << ch;
 				_input[inputSize_++] = ch;

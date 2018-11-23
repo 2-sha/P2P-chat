@@ -29,6 +29,7 @@ namespace application
 		ENTER = 10
 #endif
 	};
+	//const std::vector<long long> exCharset = {  };
 	const short int MAX_INPUT_SIZE = 256;
 
 	struct Message
