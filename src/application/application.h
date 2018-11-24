@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <mutex>
+#include <algorithm>
 #include <functional>
 #include <locale>
 #ifdef _WIN32
@@ -23,7 +24,8 @@ namespace application
 		CTR_C = 3,
 #ifdef _WIN32
 		BACKSPACE = 8,
-		ENTER = 13
+		ENTER = 13,
+		CTR_V = 22
 #else
 		BACKSPACE = 127,
 		ENTER = 10
@@ -47,9 +49,8 @@ namespace application
 		std::wstring separator_;
 		// Separator betwen printing message and another messages
 		std::wstring prompt_;
-
 		// User input buffer
-		wchar_t _input[MAX_INPUT_SIZE + 1];
+		std::wstring input_;
 
 		// Number of characters in a user-entered message
 		int inputSize_;

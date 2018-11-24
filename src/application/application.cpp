@@ -4,7 +4,7 @@ using namespace application;
 void Chat::cleanInput()
 {
 	int consoleWidth = getConsoleWidth(),
-		lines = promptLines_ + (promptLastLine_ + inputSize_ - 1) / consoleWidth;
+		lines = promptLines_ + (promptLastLine_ + input_.size() - 1) / consoleWidth;
 
 	for (int j = 0; j < lines; j++)
 	{
@@ -101,14 +101,12 @@ void Chat::moveCursor(const int x, const int y)
 Chat::Chat(const std::wstring &username, const std::wstring &separator, const std::wstring &prompt) 
 	: username_(username), separator_(separator), prompt_(prompt), beforeExiting_([]() {})
 {
-	_input[MAX_INPUT_SIZE - 1] = 0;
 	calcPrompt();
 }
 
 Chat::Chat()
 	: username_(L"Unknown user"), separator_(L": "), prompt_(L"---------------\nEnter you message: "), beforeExiting_([]() {})
 {
-	_input[MAX_INPUT_SIZE - 1] = 0;
 	calcPrompt();
 };
 
@@ -117,7 +115,7 @@ void Chat::printMessage(Message receivedMessage)
 	mut.lock();
 	cleanInput();
 	std::wcout << receivedMessage.user << separator_ << receivedMessage.content << std::endl;
-	std::wcout << prompt_ << _input;
+	std::wcout << prompt_ << input_;
 	mut.unlock();
 }
 
@@ -126,17 +124,20 @@ void Chat::printSystemMessage(std::wstring message)
 	mut.lock();
 	cleanInput();
 	std::wcout << message << std::endl;
-	std::wcout << prompt_ << _input;
+	std::wcout << prompt_ << input_;
 	mut.unlock();
 }
 
 int Chat::run()
 {
+#ifdef _WIN32
+	// for 'case Controls::CTR_V':
+	HANDLE hData;
+#endif
 	std::wstring temp;
 	wchar_t ch;
 
 	std::wcout << prompt_;
-	inputSize_ = 0;
 
 	while (true)
 	{
@@ -150,12 +151,44 @@ int Chat::run()
 		case Controls::CTR_C:
 			beforeExiting_();
 			return 0;
-		case Controls::BACKSPACE:
-			if (inputSize_ != 0)
+#ifdef _WIN32
+		case Controls::CTR_V:
+			if (!OpenClipboard(nullptr))
 			{
-				_input[inputSize_--] = 0;
+				CloseClipboard();
+				break;
+			}
+			hData = GetClipboardData(CF_UNICODETEXT);
+			if (hData == nullptr)
+			{
+				CloseClipboard();
+				break;
+			}
+			temp = static_cast<wchar_t*>(GlobalLock(hData));
+			if (temp.empty())
+			{
+				CloseClipboard();
+				break;
+			}
+			GlobalUnlock(hData);
+			CloseClipboard();
+
+			if (temp.size() + input_.size() >= MAX_INPUT_SIZE)
+				temp = temp.erase(MAX_INPUT_SIZE - input_.size(), temp.size() - MAX_INPUT_SIZE + input_.size());
+			input_ += temp;
+
+			mut.lock();
+			cleanInput();
+			std::wcout << prompt_ << input_;
+			mut.unlock();
+			break;
+#endif
+		case Controls::BACKSPACE:
+			if (input_.size() != 0)
+			{
+				input_.pop_back();
 				int w = getConsoleWidth();
-				if (promptLastLine_ + inputSize_ % w == w)
+				if (promptLastLine_ + input_.size() % w == w)
 				{
 #ifdef _WIN32
 					moveCursor(w - 1, 1);
@@ -172,27 +205,25 @@ int Chat::run()
 			}
 			break;
 		case Controls::ENTER:
-			// The message may come faster than the end of this case
-			// so I reset the data first and then send the message.
-			if (inputSize_ == 0)
+			// The message comes faster than the end of this case
+			// cause this I reset data first and then send the message.
+			if (input_.size() == 0)
 				break;
-			temp = _input;
+			temp = input_;
 
 			mut.lock();
 			cleanInput();
-			wmemset(_input, 0, MAX_INPUT_SIZE);
-			inputSize_ = 0;
+			input_.clear();
 			std::wcout << prompt_;
 			mut.unlock();
 
-			sendMessage(temp);
+			sendMessage(temp.c_str());
 			break;
 		default:
-			if (inputSize_ < MAX_INPUT_SIZE && 
-				ch > 31 && (ch < 128 || ch > 160))
+			if (input_.size() < MAX_INPUT_SIZE && ch > 31 && (ch < 128 || ch > 160))
 			{
 				std::wcout << ch;
-				_input[inputSize_++] = ch;
+				input_.push_back(ch);
 			}
 			break;
 		}
