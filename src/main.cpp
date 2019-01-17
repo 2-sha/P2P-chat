@@ -103,11 +103,18 @@ int main(int argc, char* argv[])
 				isUsernameCorrect = false;
 				continue;
 			}
+			if (username.empty())
+			{
+				std::wcout << "Username can't be empty!\nTry to enter another username: ";
+				isUsernameCorrect = false;
+				continue;
+			}
+
 
 			std::vector<std::string> userList = net.sendSurvey(json({
 				{ "type", "user_list_req" }
 			}).dump(), std::regex(".*(\"type\":\"user_list_res\").*"));
-
+	
 			for (auto it : userList)
 			{
 				if (json::parse(it).at("data").at("user").get<std::wstring>() == username)
