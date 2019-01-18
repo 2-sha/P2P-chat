@@ -55,7 +55,7 @@ address Network::getLocalIp()
 void Network::startReceiving(const std::function<void(std::string)> callback)
 {
 	if (isReceiverRun)
-		throw std::runtime_error("Receiver already run!");
+		return;
 
 	std::thread receiverThread(&Network::receiver, this, callback);
 	receiverThread.detach();
@@ -87,7 +87,7 @@ std::vector<std::string> Network::sendSurvey(const std::string &data, const std:
 		if (!receivingSock.is_open())
 			return;
 		
-		if (regex_match(buf, reg))
+		if (std::regex_match(buf, reg))
 			responses.push_back(buf);
 
 		memset(buf, 0, PACKAGE_SIZE);
@@ -113,6 +113,36 @@ void Network::sendBroadcast(const std::string &data)
 void Network::setPort(const unsigned short port)
 {
 	port_ = port;
-	// Trying to setup port
-	udp::socket sock(service, udp::endpoint(udp::v4(), port));
+	char testQuery[] = "test_connection";
+	std::string res;
+	char buf[PACKAGE_SIZE];
+	memset(buf, 0, PACKAGE_SIZE);
+
+	// Send test query
+	boost::asio::deadline_timer queryTimer(service, boost::posix_time::milliseconds(100));
+	queryTimer.async_wait(
+		[&](const boost::system::error_code &ex) { sendBroadcast(testQuery); }
+	);
+	
+	// Receive test query
+	udp::socket sock(service, udp::endpoint(udp::v4(), port_));
+	boost::asio::deadline_timer stopTimer(service, boost::posix_time::milliseconds(200));
+	stopTimer.async_wait(
+		[&sock](const boost::system::error_code &ex) { sock.close(); }
+	);
+	std::function<void(const boost::system::error_code&, std::size_t)> onRead =
+		[&](const boost::system::error_code &err, std::size_t read_bytes)
+	{
+		if (!sock.is_open())
+			return;
+
+		res = buf;
+		memset(buf, 0, PACKAGE_SIZE);
+		sock.async_receive(boost::asio::buffer(buf, PACKAGE_SIZE), onRead);
+	};
+	sock.async_receive(boost::asio::buffer(buf, PACKAGE_SIZE), onRead);
+	service.run();
+
+	if (strcmp(res.c_str(), testQuery) != 0)
+		throw std::runtime_error("Access denied");
 }

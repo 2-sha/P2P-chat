@@ -65,6 +65,7 @@ int main(int argc, char* argv[])
 	catch (std::exception &ex)
 	{
 		std::wcout << "Unable connect to " << port << " port" << std::endl;
+		std::wcout << ex.what() << std::endl;
 #ifdef _WIN32
 		std::wcin.ignore(255, '\n');
 		std::wcin.get();
