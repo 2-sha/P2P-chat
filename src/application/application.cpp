@@ -58,6 +58,8 @@ int Chat::_getwch()
 
 void Chat::sendMessage(const std::wstring &content)
 {
+	if (content.empty())
+		return;
 	sendMessageCallback_(Message(username_, content));
 }
 
@@ -134,6 +136,7 @@ int Chat::run()
 	// for 'case Controls::CTR_V':
 	HANDLE hData;
 #endif
+	int k;
 	std::wstring temp;
 	wchar_t ch;
 
@@ -173,12 +176,20 @@ int Chat::run()
 			GlobalUnlock(hData);
 			CloseClipboard();
 
-			if (temp.size() + input_.size() >= MAX_INPUT_SIZE)
+			if (temp.size() + input_.size() > MAX_INPUT_SIZE)
 				temp = temp.erase(MAX_INPUT_SIZE - input_.size(), temp.size() - MAX_INPUT_SIZE + input_.size());
-			input_ += temp;
+
+			k = 0;
+			while (temp.find(L"\r\n", k) != std::string::npos)
+			{
+				sendMessage(temp.substr(k, temp.find(L"\r\n", k) - k));
+				k = temp.find(L"\r\n", k) + 2;
+			}
 
 			mut.lock();
 			cleanInput();
+			// If temp added to input_ before cleanInput(), it removes excessive lines
+			input_ += temp.substr(k, temp.find(L"/n") - k);
 			std::wcout << prompt_ << input_;
 			mut.unlock();
 			break;
