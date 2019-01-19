@@ -206,7 +206,8 @@ int Chat::run()
 					std::wcout << " \b";
 					moveCursor(w - 1, 1);
 #else
-					std::wcout << "\b \b";
+					moveCursor(w, 1);
+					std::wcout << " ";
 #endif
 				}
 				else

@@ -236,7 +236,17 @@ int main(int argc, char* argv[])
 		}
 	});
 
-#ifndef _WIN32
+#ifdef _WIN32
+	SetConsoleCtrlHandler([](DWORD eventCode) -> BOOL WINAPI
+	{
+		if (eventCode == CTRL_CLOSE_EVENT || eventCode == CTRL_SHUTDOWN_EVENT)
+		{
+			beforeExiting();
+			return 0;
+		}
+		return 1;
+	}, TRUE);
+#else
 	signal(SIGINT, [](int eventCode)
 	{
 		beforeExiting();
