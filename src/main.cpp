@@ -35,6 +35,9 @@ int main(int argc, char* argv[])
 	setvbuf(stdout, 0, _IONBF, 0);
 	setvbuf(stderr, 0, _IONBF, 0);
 
+	// Set language for boost error messages
+	SetThreadUILanguage(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US));
+
 	// Set encoding to UTF-16 (UTF-8 on Linux)
 #ifdef _WIN32
 	_setmode(_fileno(stdout), _O_U16TEXT);
