@@ -14,6 +14,7 @@ Network::Network()
 
 void Network::receiver(const std::function<void(std::string)> callback)
 {
+	boost::asio::io_service service;
 	udp::socket sock(service, udp::endpoint(udp::v4(), port_));
 	char buf[PACKAGE_SIZE];
 	while (true)
@@ -42,6 +43,7 @@ void Network::receiver(const std::function<void(std::string)> callback)
 
 address Network::getLocalIp()
 {
+	boost::asio::io_service service;
 	udp::resolver resolver(service);
 	// Any host that is always running
 	udp::resolver::query query(udp::v4(), "google.com", "");
@@ -69,24 +71,21 @@ void Network::stopReceiving()
 
 std::vector<std::string> Network::sendSurvey(const std::string &data, const std::regex &reg)
 {
+	boost::asio::io_service service;
 	char buf[PACKAGE_SIZE];
 	memset(buf, 0, PACKAGE_SIZE);
 	std::vector<std::string> responses;
 
 	sendBroadcast(data);
-
 	// Accept incoming connections that match the regular expression for 100ms
 	udp::socket receivingSock(service, udp::endpoint(udp::v4(), port_));
-	boost::asio::deadline_timer timer(service, boost::posix_time::milliseconds(100));
+	boost::asio::deadline_timer timer(service, boost::posix_time::milliseconds(200));
 	timer.async_wait(
-		[&receivingSock](const boost::system::error_code &ex) { receivingSock.close(); }
+		[&service](const boost::system::error_code &ex) { service.stop(); }
 	);
 	std::function<void(const boost::system::error_code&, std::size_t)> onRead =
 		[&](const boost::system::error_code &err, std::size_t read_bytes)
 	{
-		if (!receivingSock.is_open())
-			return;
-		
 		if (std::regex_match(buf, reg))
 			responses.push_back(buf);
 
@@ -101,6 +100,7 @@ std::vector<std::string> Network::sendSurvey(const std::string &data, const std:
 
 void Network::sendBroadcast(const std::string &data)
 {
+	boost::asio::io_service service;
 	udp::endpoint ep(address_v4::broadcast(), port_);
 	udp::socket senderSock(service, udp::endpoint(udp::v4(), 0));
 	senderSock.set_option(socket_base::broadcast(true));
@@ -112,6 +112,7 @@ void Network::sendBroadcast(const std::string &data)
 
 void Network::setPort(const unsigned short port)
 {
+	boost::asio::io_service service;
 	port_ = port;
 	char testQuery[] = "test_connection";
 	std::string res;
@@ -128,14 +129,11 @@ void Network::setPort(const unsigned short port)
 	udp::socket sock(service, udp::endpoint(udp::v4(), port_));
 	boost::asio::deadline_timer stopTimer(service, boost::posix_time::milliseconds(200));
 	stopTimer.async_wait(
-		[&sock](const boost::system::error_code &ex) { sock.close(); }
+		[&service](const boost::system::error_code &ex) { service.stop(); }
 	);
 	std::function<void(const boost::system::error_code&, std::size_t)> onRead =
 		[&](const boost::system::error_code &err, std::size_t read_bytes)
 	{
-		if (!sock.is_open())
-			return;
-
 		res = buf;
 		memset(buf, 0, PACKAGE_SIZE);
 		sock.async_receive(boost::asio::buffer(buf, PACKAGE_SIZE), onRead);

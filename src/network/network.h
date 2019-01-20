@@ -25,7 +25,6 @@ namespace network
 
 	class Network
 	{
-		boost::asio::io_service service;
 		address localIp;
 		bool isReceiverRun = false;
 		unsigned short port_;

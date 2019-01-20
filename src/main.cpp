@@ -1,3 +1,7 @@
+// Show all warning messages
+//#define DEBUG_MODE
+#define BOOST_ASIO_ENABLE_HANDLER_TRACKING
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -84,7 +88,17 @@ int main(int argc, char* argv[])
 	{
 		std::wcout << "List of online user:" << std::endl;
 		for (auto it : userList)
-			std::wcout << json::parse(it).at("data").at("user").get<std::wstring>() << std::endl;
+		{
+			try
+			{
+				std::wcout << json::parse(it).at("data").at("user").get<std::wstring>() << std::endl;
+			}
+			catch (std::exception &ex)
+			{
+				std::wcout << "Parsing username error!" << std::endl;
+				continue;
+			}
+		}
 		std::wcout << std::endl;
 	}
 
@@ -118,11 +132,18 @@ int main(int argc, char* argv[])
 	
 			for (auto it : userList)
 			{
-				if (json::parse(it).at("data").at("user").get<std::wstring>() == username)
+				try
 				{
-					std::wcout << "Username already exists!\nTry to enter another username: ";
-					isUsernameCorrect = false;
-					break;
+					if (json::parse(it).at("data").at("user").get<std::wstring>() == username)
+					{
+						std::wcout << "Username already exists!\nTry to enter another username: ";
+						isUsernameCorrect = false;
+						break;
+					}
+				}
+				catch (std::exception &ex)
+				{
+					continue;
 				}
 			}
 		}
@@ -228,11 +249,15 @@ int main(int argc, char* argv[])
 		}
 		catch (std::exception &ex)
 		{
+#ifdef DEBUG_MODE
 			std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
 			app.printSystemMessage(
 				L"\nError with incoming message!\nDescription: " +
 				converter.from_bytes(ex.what()) + L'\n'
 			);
+#else
+			return;
+#endif
 		}
 	});
 
