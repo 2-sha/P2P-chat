@@ -9,7 +9,7 @@ At startup, you can use `-p` or `-port` option to select the port to which you w
 ![Пример работы](https://image.prntscr.com/image/qJkkhUfPTYqk6M1j_pAuLQ.gif)
 
 ***
-**AND IT'S CROSS-PLATFORM!!!!**<br>
+**And it's cross-platform!**<br>
 In general, I tested it only on Windows and Ubuntu, so for other Unix systems and older versions of Windows I can't vouch. But it should still work everywhere.
 ***
 ## Installation
@@ -17,20 +17,20 @@ The fastest and easiest way is to download the compiled files for Windows or Lin
 ### Windows
 [Link to compilled version](https://github.com/2-sha/P2P-chat/releases/download/v1.0/P2P-chat_windows.exe)
 
-##### Boost installing
+#### Boost installing
 You can compile boost from [sources](https://www.boost.org/users/history/version_1_67_0.html) yourself or install it by this [installer](https://sourceforge.net/projects/boost/files/boost-binaries/1.67.0/). Cmake looks for it in the folder C:/local
-##### Compilation
+#### Compilation
 Use visual studio ¯\_(ツ)_/¯ It can works with CMake projects
 
 ### Linux
 [Link to compilled version](https://github.com/2-sha/P2P-chat/releases/download/v1.0/P2P-chat_linux)
 
-##### Boost installing
+#### Boost installing
 If you wish, you can also compile from the [source code](https://www.boost.org/users/history/version_1_67_0.html), but you can just download the compiled version
 ``` bash
 sudo apt-get install libboost-all-dev
 ```
-##### Compilation
+#### Compilation
 ``` bash
 git clone https://github.com/2-sha/P2P-chat.git
 cd P2P-chat
