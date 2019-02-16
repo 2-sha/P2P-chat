@@ -21,21 +21,21 @@
 typedef nlohmann::json json;
 typedef application::Message Message;
 
+// Because I can't capture variables in the lambda function in SetConsoleCtrlHandler
+// I have to make the variables global
 network::Network net;
 application::Chat app;
 
 std::wstring username;
 unsigned short int port = 8001;
 
-void beforeExiting();
-
 int main(int argc, char* argv[])
 {
-	// Disable buffering
+	// Now messages are displayed in the console without waiting for input '\n'
 	setvbuf(stdout, 0, _IONBF, 0);
 	setvbuf(stderr, 0, _IONBF, 0);
 
-	// Set language for boost error messages
+	// By default, boost displays error messages in the system language
 #ifdef _WIN32
 	SetThreadUILanguage(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US));
 #endif
@@ -49,7 +49,6 @@ int main(int argc, char* argv[])
 	setlocale(LC_ALL, "");
 #endif
 
-	// Parsing parameters
 	for (int i = 0; i < argc; i++)
 	{
 		if (strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "-port") == 0)
@@ -266,12 +265,19 @@ int main(int argc, char* argv[])
 		}
 	});
 
+	// Ctrl+c processing on Windows and Linux
 #ifdef _WIN32
 	SetConsoleCtrlHandler([](DWORD eventCode) -> BOOL WINAPI
 	{
 		if (eventCode == CTRL_CLOSE_EVENT || eventCode == CTRL_SHUTDOWN_EVENT)
 		{
-			beforeExiting();
+			net.stopReceiving();
+			net.sendBroadcast(json({
+			{ "type", "remove_user" },
+				{ "data", {
+					{ "user", username }
+				}}
+			}).dump());
 			return 0;
 		}
 		return 1;
@@ -279,7 +285,13 @@ int main(int argc, char* argv[])
 #else
 	signal(SIGINT, [](int eventCode)
 	{
-		beforeExiting();
+		net.stopReceiving();
+		net.sendBroadcast(json({
+		{ "type", "remove_user" },
+			{ "data", {
+				{ "user", username }
+			}}
+		}).dump());
 
 		// Transfer of the terminal to canonical mode
 		struct termios tattr;
@@ -292,17 +304,15 @@ int main(int argc, char* argv[])
 #endif 
 
 	// Starts application cycle
-	app.setBeforeExiting(beforeExiting);
+	app.setBeforeExiting([]()
+	{
+		net.stopReceiving();
+		net.sendBroadcast(json({
+		{ "type", "remove_user" },
+			{ "data", {
+				{ "user", username }
+			}}
+		}).dump());
+	});
 	return app.run();
-}
-
-void beforeExiting()
-{
-	net.stopReceiving();
-	net.sendBroadcast(json({
-	{ "type", "remove_user" },
-		{ "data", {
-			{ "user", username }
-		}}
-	}).dump());
 }
