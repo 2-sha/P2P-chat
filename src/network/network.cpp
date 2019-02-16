@@ -45,14 +45,10 @@ address Network::getLocalIp()
 {
 	boost::asio::io_service service;
 	udp::resolver resolver(service);
-	// Any host that is always running
-	//udp::resolver::query query(udp::v4(), boost::asio::ip::address::from_string("127.0.0.1"), "");
-	/*udp::resolver::iterator endpoints = resolver.resolve(query);
-	udp::endpoint ep = *endpoints;*/
+	// Random ip
 	udp::endpoint ep(boost::asio::ip::address::from_string("1.1.1.1"), port_);
 	udp::socket socket(service);
 	socket.connect(ep);
-	std::wcout << socket.local_endpoint().address().to_string().c_str() << std::endl;
 	return socket.local_endpoint().address();
 }
 
