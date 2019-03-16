@@ -197,7 +197,6 @@ int main(int argc, char* argv[])
 					{ "content", message.content }
 				}}
 			}).dump());
-			app.printMessage(message);
 		}
 		catch (std::exception &ex)
 		{

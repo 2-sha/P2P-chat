@@ -25,12 +25,10 @@ namespace network
 
 	class Network
 	{
-		address localIp;
 		bool isReceiverRun = false;
 		unsigned short port_;
 
 		void receiver(const std::function<void(std::string)> callback);
-		address getLocalIp();
 	public:
 		Network(const unsigned short port);
 		Network();

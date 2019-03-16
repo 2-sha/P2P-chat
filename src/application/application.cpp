@@ -217,7 +217,7 @@ int Chat::run()
 			}
 			break;
 		case Controls::ENTER:
-			// The message comes faster than the end of this case
+			// Shipped message comes faster than the end of this case
 			// cause this I reset data first and then send the message.
 			if (input_.size() == 0)
 				break;

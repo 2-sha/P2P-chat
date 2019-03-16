@@ -2,13 +2,12 @@
 using namespace network;
 
 Network::Network(const unsigned short port)
-	: localIp(getLocalIp())
 {
 	setPort(port);
 }
 
 Network::Network()
-	: port_(0), localIp(getLocalIp())
+	: port_(0)
 {
 }
 
@@ -26,9 +25,6 @@ void Network::receiver(const std::function<void(std::string)> callback)
 
 			sock.receive_from(boost::asio::buffer(buf, PACKAGE_SIZE), sender_ep);
 
-			// Do not accept your own requests
-			if (sender_ep.address() == localIp)
-				continue;
 			if (!isReceiverRun)
 				return;
 
@@ -39,17 +35,6 @@ void Network::receiver(const std::function<void(std::string)> callback)
 			continue;
 		}
 	}
-}
-
-address Network::getLocalIp()
-{
-	boost::asio::io_service service;
-	udp::resolver resolver(service);
-	// Random ip
-	udp::endpoint ep(boost::asio::ip::address::from_string("1.1.1.1"), port_);
-	udp::socket socket(service);
-	socket.connect(ep);
-	return socket.local_endpoint().address();
 }
 
 void Network::startReceiving(const std::function<void(std::string)> callback)
