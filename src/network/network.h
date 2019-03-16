@@ -13,6 +13,7 @@
 #include <vector>
 #include <functional>
 #include <regex>
+#include <time.h>
 
 namespace network
 {

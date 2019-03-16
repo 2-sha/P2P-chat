@@ -97,12 +97,12 @@ void Network::setPort(const unsigned short port)
 {
 	boost::asio::io_service service;
 	port_ = port;
-	char testQuery[] = "test_connection";
+	std::string testQuery = std::to_string(time(0));
 	std::string res;
 	char buf[PACKAGE_SIZE];
 	memset(buf, 0, PACKAGE_SIZE);
 
-	// Send test query
+	// Timer waits receiver start
 	boost::asio::deadline_timer queryTimer(service, boost::posix_time::milliseconds(100));
 	queryTimer.async_wait(
 		[&](const boost::system::error_code &ex) { sendBroadcast(testQuery); }
@@ -124,6 +124,6 @@ void Network::setPort(const unsigned short port)
 	sock.async_receive(boost::asio::buffer(buf, PACKAGE_SIZE), onRead);
 	service.run();
 
-	if (strcmp(res.c_str(), testQuery) != 0)
+	if (testQuery != res)
 		throw std::runtime_error("Access denied");
 }
